@@ -82,6 +82,7 @@ See 'snap info docker' for additional versions.
 5. (Необязательная часть) Дополнительно настройте remote ssh context к вашему серверу. Отобразите список контекстов и результат удаленного выполнения ```docker ps -a```
 6. В качестве ответа повторите  sql-запрос и приложите скриншот с данного сервера, bash-скрипт и ссылку на fork-репозиторий.
 
+Для облегчения процесса я создал http-токен с правами repo-readonly сроком 7 дней
 Скрипт:
 ```
 #!/bin/bash
@@ -106,10 +107,37 @@ docker compose up -d
 Скачайте docker образ ```hashicorp/terraform:latest``` и скопируйте бинарный файл ```/bin/terraform``` на свою локальную машину, используя dive и docker save.
 Предоставьте скриншоты  действий .
 
+```
+docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock wagoodman/dive:latest hashicorp/terraform:lates
+```
+
+1. Ctrl+F - ставим фильтр terraform
+2. Стрелками выбираем слой и находим бинарник - это слой sha256:c3c3a5978391c2884975a1e49c4d3ee1e29dac201a59bf27685a1b750ad5e64a
+3. 
+```
+docker save hashicorp/terraform:latest -o /opt/terraform/terraform-saved
+tar -xvf terraform-saved
+c3c3a5978391c2884975a1e49c4d3ee1e29dac201a59bf27685a1b750ad5e64a
+cd blobs/sha256/
+tar -xvf c3c3a5978391c2884975a1e49c4d3ee1e29dac201a59bf27685a1b750ad5e64a
+```
+
+Сравниваем версию. В полученном слое v1.9.8, в то время как на машине стоит 1.9.0
+
+<img src = "img/task6.png" width = 100%>
+
 ## Задача 6.1
 Добейтесь аналогичного результата, используя docker cp.  
 Предоставьте скриншоты  действий .
 
+Также как и в случае с scp копирование производится как с соседней вм, в т.ч. даже с отключенного. Для этого достаточно разово его запустить.
+```
+docker run -d hashicorp/terraform
+docker ps -a
+docker cp cda06e9ba524:/bin/terraform /opt/terraform/
+```
+
+<img src = "img/task6-1.png" width = 100%>
 ## Задача 6.2 (**)
 Предложите способ извлечь файл из контейнера, используя только команду docker build и любой Dockerfile.  
 Предоставьте скриншоты  действий .
